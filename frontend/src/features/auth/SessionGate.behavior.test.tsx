@@ -3,6 +3,7 @@ import { describe, expect, it, vi } from "vitest";
 
 import { SessionGate } from "./SessionGate";
 import type { AuthSessionResponse } from "../../shared/api/types";
+import { ToastProvider } from "../../shared/ui/feedback";
 
 vi.mock("../../shared/api/client", () => ({
   request: vi.fn(),
@@ -12,6 +13,14 @@ vi.mock("../../shared/api/client", () => ({
 
 import { request } from "../../shared/api/client";
 const mockRequest = vi.mocked(request);
+
+function renderSessionGate(children: Parameters<typeof SessionGate>[0]["children"]) {
+  render(
+    <ToastProvider>
+      <SessionGate>{children}</SessionGate>
+    </ToastProvider>
+  );
+}
 
 const mockSession: AuthSessionResponse = {
   csrf_token: "test-csrf",
@@ -38,7 +47,7 @@ describe("SessionGate behavior", () => {
   it("shows loading state while bootstrapping session", () => {
     mockRequest.mockReturnValueOnce(new Promise(() => undefined));
 
-    render(<SessionGate>{() => <div>authenticated content</div>}</SessionGate>);
+    renderSessionGate(() => <div>authenticated content</div>);
 
     expect(screen.getByText(/проверка сессии/i)).toBeInTheDocument();
     expect(screen.queryByText(/authenticated content/)).not.toBeInTheDocument();
@@ -47,7 +56,7 @@ describe("SessionGate behavior", () => {
   it("transitions to anonymous when session request returns 401", async () => {
     mockRequest.mockRejectedValueOnce(new Error("401 Unauthorized"));
 
-    render(<SessionGate>{() => <div>authenticated content</div>}</SessionGate>);
+    renderSessionGate(() => <div>authenticated content</div>);
 
     expect(await screen.findByRole("button", { name: /войти/i })).toBeInTheDocument();
     expect(screen.queryByText(/authenticated content/)).not.toBeInTheDocument();
@@ -56,11 +65,7 @@ describe("SessionGate behavior", () => {
   it("transitions to authenticated when session request succeeds", async () => {
     mockRequest.mockResolvedValueOnce(mockSession);
 
-    render(
-      <SessionGate>
-        {({ user }) => <div>Welcome {user.login}</div>}
-      </SessionGate>
-    );
+    renderSessionGate(({ user }) => <div>Welcome {user.login}</div>);
 
     expect(await screen.findByText(/welcome test_user/i)).toBeInTheDocument();
     expect(screen.queryByRole("button", { name: /войти/i })).not.toBeInTheDocument();

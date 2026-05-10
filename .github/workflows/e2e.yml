@@ -85,6 +85,8 @@ jobs:
       - name: Build frontend
         working-directory: frontend
         run: npm ci && npm run build
+        env:
+          VITE_API_BASE_URL: http://localhost:8080
 
       - name: Serve frontend
         run: npx --yes serve -s frontend/dist -l 5173 &

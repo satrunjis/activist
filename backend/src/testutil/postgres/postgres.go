@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"path/filepath"
 	"runtime"
+	"strings"
 	"sync"
 	"time"
 
@@ -30,7 +31,11 @@ func NewTestDatabase(ctx context.Context) (*TestDatabase, func(), error) {
 		tcpostgres.WithPassword("activist"),
 		testcontainers.WithWaitStrategy(
 			wait.ForListeningPort("5432/tcp"),
-			wait.ForLog("database system is ready to accept connections").WithOccurrence(1),
+			wait.ForLog("database system is ready to accept connections").WithOccurrence(2),
+			wait.ForSQL("5432/tcp", "pgx", func(host string, port string) string {
+				port = strings.TrimSuffix(port, "/tcp")
+				return fmt.Sprintf("postgres://activist:activist@%s:%s/activist_base_test?sslmode=disable", host, port)
+			}),
 		),
 	)
 	if err != nil {

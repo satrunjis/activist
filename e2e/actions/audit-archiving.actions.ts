@@ -83,11 +83,11 @@ export async function expectAuditLogEntryVisible(
 
   const table = page.getByTestId("audit-log-table");
   await expect(table).toBeVisible();
-  await expect(table.getByText(input.eventType)).toBeVisible();
-  await expect(table.getByText(input.subjectType)).toBeVisible();
-  await expect(table.getByText(input.subjectId)).toBeVisible();
+  await expect(table.getByText(input.eventType).first()).toBeVisible();
+  await expect(table.getByText(input.subjectType).first()).toBeVisible();
+  await expect(table.getByText(input.subjectId).first()).toBeVisible();
   if (input.actorId) {
-    await expect(table.getByText(input.actorId)).toBeVisible();
+    await expect(table.getByText(input.actorId).first()).toBeVisible();
   }
 }
 

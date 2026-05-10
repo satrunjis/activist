@@ -557,7 +557,7 @@ export function RolesPage({ permissions }: RolesPageProps) {
                   <p style={{ margin: 0, fontSize: "var(--text-sm)", color: "var(--color-text-muted)" }}>
                     {canManageRoles
                       ? "Выберите роль для редактирования или создайте новую."
-                      : "Выберите роль, чтобы посмотреть подробности."}
+                      : "Управление ролями доступно только администраторам."}
                   </p>
                 </div>
               ) : null}

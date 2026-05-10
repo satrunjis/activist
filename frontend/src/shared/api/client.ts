@@ -12,7 +12,7 @@ type RequestOptions = Omit<RequestInit, "body" | "method"> & {
 };
 
 const mutatingMethods = new Set<RequestMethod>(["POST", "PUT", "PATCH", "DELETE"]);
-const apiBaseUrl = "";
+const apiBaseUrl = import.meta.env.VITE_API_BASE_URL?.trim() ?? "";
 const AUTH_ROUTE_PATH = "/";
 
 let isUnauthorizedRedirectInProgress = false;

@@ -3,7 +3,7 @@ import userEvent from "@testing-library/user-event";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import { DivisionsPage as DivisionTreePage } from "./DivisionsPage";
-import type { DivisionChildrenResponse } from "../../shared/api/types";
+import type { DivisionTreeNode } from "../../shared/api/types";
 import type { ApiRequestError } from "../../shared/api/errorPolicy";
 import { ToastProvider } from "../../shared/ui/feedback";
 
@@ -26,19 +26,16 @@ function renderDivisionTreePage() {
   );
 }
 
-const rootChildrenFixture: DivisionChildrenResponse = {
-  items: [
-    {
-      id: "div-root",
-      parent_id: "root",
-      short_name: "Root",
-      full_name: "Root Division",
-      description: "Top level",
-      is_archived: false,
-      has_children: false,
-      children_count: 0
-    }
-  ]
+const rootTreeFixture: DivisionTreeNode = {
+  id: "div-root",
+  parent_id: undefined,
+  short_name: "Root",
+  full_name: "Root Division",
+  description: "Top level",
+  is_archived: false,
+  has_children: false,
+  children_count: 0,
+  children: []
 };
 
 function accessError(): ApiRequestError {
@@ -59,7 +56,7 @@ describe("DivisionTreePage ACL boundary behavior", () => {
   it("disables create and edit buttons and shows forbidden scope message after access error", async () => {
     const user = userEvent.setup();
 
-    mockRequest.mockResolvedValueOnce(rootChildrenFixture);
+    mockRequest.mockResolvedValueOnce(rootTreeFixture);
     mockRequest.mockRejectedValueOnce(accessError());
 
     renderDivisionTreePage();
@@ -88,41 +85,29 @@ describe("DivisionTreePage ACL boundary behavior", () => {
   });
 
   it("eagerly loads all divisions including nested children on mount", async () => {
-    mockRequest.mockImplementation(async (path: string) => {
-      if (String(path).includes("?parent_id=root")) {
-        return {
-          items: [
-            {
-              id: "div-root",
-              parent_id: "root",
-              short_name: "Root",
-              full_name: "Root Division",
-              description: "Top level",
-              is_archived: false,
-              has_children: true,
-              children_count: 1
-            }
-          ]
-        };
-      }
-      if (String(path).includes("?parent_id=div-root")) {
-        return {
-          items: [
-            {
-              id: "child-1",
-              parent_id: "div-root",
-              short_name: "Child",
-              full_name: "Child Division",
-              description: "Nested",
-              is_archived: false,
-              has_children: false,
-              children_count: 0
-            }
-          ]
-        };
-      }
-      return { items: [] };
-    });
+    mockRequest.mockResolvedValueOnce({
+      id: "div-root",
+      parent_id: undefined,
+      short_name: "Root",
+      full_name: "Root Division",
+      description: "Top level",
+      is_archived: false,
+      has_children: true,
+      children_count: 1,
+      children: [
+        {
+          id: "child-1",
+          parent_id: "div-root",
+          short_name: "Child",
+          full_name: "Child Division",
+          description: "Nested",
+          is_archived: false,
+          has_children: false,
+          children_count: 0,
+          children: []
+        }
+      ]
+    } satisfies DivisionTreeNode);
 
     renderDivisionTreePage();
 
@@ -130,10 +115,7 @@ describe("DivisionTreePage ACL boundary behavior", () => {
     expect(await screen.findByTestId("division-node-div-root")).toBeInTheDocument();
     expect(await screen.findByTestId("division-node-child-1")).toBeInTheDocument();
 
-    // Exactly one request for the nested level
-    const childLoads = mockRequest.mock.calls.filter(([url]) =>
-      String(url).includes("?parent_id=div-root")
-    );
-    expect(childLoads).toHaveLength(1);
+    expect(mockRequest).toHaveBeenCalledTimes(1);
+    expect(String(mockRequest.mock.calls[0][0])).toContain("/api/v1/divisions/tree");
   });
 });

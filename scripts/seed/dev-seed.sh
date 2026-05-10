@@ -53,17 +53,16 @@ VALUES
   ('seed-legal-policy', 'seed-legal', 'Policy', 'Policy Team', 'Policy team', '', '[]'::jsonb, false)
 ON CONFLICT (id) DO NOTHING;
 
-INSERT INTO roles (id, name, kind, permissions, created_at, updated_at)
+INSERT INTO roles (id, name, permissions, created_at, updated_at)
 VALUES
-  ('seed-role-standard', 'Seed Standard', 'standard', decode('010802', 'hex'), now(), now()),
-  ('seed-role-manager', 'Seed Manager (Current Division)', 'standard', decode('0103020502', 'hex'), now(), now()),
-  ('seed-role-can-manage-roles', 'Seed CanManageRoles', 'standard', decode('010A03', 'hex'), now(), now()),
-  ('seed-role-system-admin', 'Seed System Admin', 'standard', decode('01FF03', 'hex'), now(), now()),
-  ('seed-role-leader', 'Seed Leader', 'leader', ''::bytea, now(), now()),
-  ('seed-role-deputy', 'Seed Deputy', 'deputy', ''::bytea, now(), now())
+  ('seed-role-standard', 'Seed Standard', decode('010802', 'hex'), now(), now()),
+  ('seed-role-manager', 'Seed Manager (Current Division)', decode('0103020502', 'hex'), now(), now()),
+  ('seed-role-can-manage-roles', 'Seed CanManageRoles', decode('010A03', 'hex'), now(), now()),
+  ('seed-role-system-admin', 'Seed System Admin', decode('01FF03', 'hex'), now(), now()),
+  ('seed-role-leader', 'Seed Leader', ''::bytea, now(), now()),
+  ('seed-role-deputy', 'Seed Deputy', ''::bytea, now(), now())
 ON CONFLICT (id) DO UPDATE
 SET name = EXCLUDED.name,
-    kind = EXCLUDED.kind,
     permissions = EXCLUDED.permissions,
     updated_at = now();
 
@@ -92,7 +91,8 @@ INSERT INTO memberships (user_id, position_id)
 VALUES
   ((SELECT id FROM users WHERE login = 'admin' LIMIT 1), 'seed-pos-system-admin'),
   ((SELECT id FROM users WHERE login = 'test0' LIMIT 1), 'seed-pos-manager'),
-  ((SELECT id FROM users WHERE login = 'role_manager' LIMIT 1), 'seed-pos-role-manager')
+  ((SELECT id FROM users WHERE login = 'role_manager' LIMIT 1), 'seed-pos-role-manager'),
+  ((SELECT id FROM users WHERE login = 'seed_target' LIMIT 1), 'seed-pos-leader')
 ON CONFLICT (user_id, position_id) DO NOTHING;
 SQL
 )

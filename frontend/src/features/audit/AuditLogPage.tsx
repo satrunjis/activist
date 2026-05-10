@@ -46,7 +46,8 @@ function hasAnyFilter(filters: AuditLogFilters): boolean {
 }
 
 export function AuditLogPage() {
-  const isInitialLoad = useRef(true);
+  const hasLoadedOnceRef = useRef(false);
+  const [hasLoadedOnce, setHasLoadedOnce] = useState(false);
   const [filterDraft, setFilterDraft] = useState<AuditLogFilters>(DEFAULT_FILTERS);
   const [appliedFilters, setAppliedFilters] = useState<AuditLogFilters>(DEFAULT_FILTERS);
   const [items, setItems] = useState<EventLogItem[]>([]);
@@ -66,9 +67,10 @@ export function AuditLogPage() {
       const response = await request<EventLogListResponse>(`/api/v1/eventlog?${query}`);
       setItems(Array.isArray(response.items) ? response.items : []);
       setTotal(typeof response.total === "number" ? response.total : 0);
-      isInitialLoad.current = false;
+      hasLoadedOnceRef.current = true;
+      setHasLoadedOnce(true);
     } catch (nextError) {
-      if (isInitialLoad.current) {
+      if (!hasLoadedOnceRef.current) {
         setItems([]);
         setTotal(0);
       }
@@ -101,7 +103,7 @@ export function AuditLogPage() {
   const canPrev = offset > 0;
   const canNext = offset + limit < total;
   const hasActiveDraftFilters = hasAnyFilter(filterDraft);
-  const showSoftRefreshing = !isInitialLoad.current && loading;
+  const showSoftRefreshing = hasLoadedOnce && loading;
   const showInlineError = Boolean(error) && items.length > 0;
   const showFullError = Boolean(error) && items.length === 0;
 
@@ -182,7 +184,7 @@ export function AuditLogPage() {
                 position: "relative"
               }}
             >
-              {isInitialLoad.current ? (
+              {!hasLoadedOnce ? (
                 <AsyncStateView
                   data={true}
                   errorMessage={error}

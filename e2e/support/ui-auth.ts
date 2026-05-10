@@ -26,10 +26,15 @@ export async function readBrowserSession(page: Page): Promise<BrowserSession | n
 }
 
 export async function ensureLoggedIn(page: Page, auth: UiCredentials): Promise<BrowserSession> {
-  await page.goto("/");
-
   const currentSession = await readBrowserSession(page);
   const currentLogin = currentSession?.user?.login?.trim();
+  if (currentLogin === auth.login && !page.url().startsWith("about:")) {
+    await expect(page.getByTestId("nav-home")).toBeVisible();
+    return currentSession;
+  }
+
+  await page.goto("/");
+
   if (currentLogin && currentLogin !== auth.login) {
     await expect(page.getByRole("button", { name: "Выйти" })).toBeVisible();
     await page.getByRole("button", { name: "Выйти" }).click();
