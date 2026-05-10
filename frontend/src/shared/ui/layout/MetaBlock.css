@@ -1,0 +1,35 @@
+.meta-block {
+  margin: 0;
+  padding: 0;
+}
+
+.meta-block--columns-1 {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.meta-block--columns-2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-4);
+}
+
+.meta-block__field {
+  display: flex;
+  flex-direction: column;
+}
+
+.meta-block__label {
+  margin: 0 0 var(--space-1);
+  font-size: var(--text-xs);
+  color: var(--color-text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.meta-block__value {
+  margin: 0;
+  font-size: var(--text-sm);
+  color: var(--color-text-primary);
+}

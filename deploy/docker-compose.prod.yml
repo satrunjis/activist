@@ -1,0 +1,97 @@
+services:
+
+  db:
+    image: postgres:16
+    container_name: activist-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_DB: ${DB_NAME}
+    volumes:
+      - activist_pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER} -d ${DB_NAME}"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+    networks:
+      - activist-net
+
+  migrate:
+    image: ghcr.io/satrunjis/activist/backend-migrate:latest
+    container_name: activist-migrate
+    restart: no
+    environment:
+      DATABASE_URL: postgres://${DB_USER}:${DB_PASSWORD}@db:5432/${DB_NAME}?sslmode=disable
+    depends_on:
+      db:
+        condition: service_healthy
+    networks:
+      - activist-net
+
+  backend:
+    image: ghcr.io/satrunjis/activist/backend:latest
+    container_name: activist-backend
+    restart: unless-stopped
+    environment:
+      APP_ENV: production
+      HTTP_ADDR: :8080
+      PUBLIC_BASE_URL: https://panel.vqnode.ru:9443
+      DATABASE_URL: postgres://${DB_USER}:${DB_PASSWORD}@db:5432/${DB_NAME}?sslmode=disable
+      SESSION_COOKIE_NAME: __Host-session
+      SESSION_IDLE_TTL: 30m
+      SESSION_ABSOLUTE_TTL: 8h
+      LOG_LEVEL: info
+      SEED_SUPERUSER_LOGIN: ${SEED_SUPERUSER_LOGIN}
+      SEED_SUPERUSER_PASSWORD: ${SEED_SUPERUSER_PASSWORD}
+    depends_on:
+      db:
+        condition: service_healthy
+      migrate:
+        condition: service_completed_successfully
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q -O /dev/null http://127.0.0.1:8080/healthz || exit 1"]
+      interval: 30s
+      timeout: 5s
+      start_period: 15s
+      retries: 3
+    networks:
+      - activist-net
+
+  frontend:
+    image: ghcr.io/satrunjis/activist/frontend:latest
+    container_name: activist-frontend
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q --spider http://localhost/ || exit 1"]
+      interval: 30s
+      timeout: 3s
+      start_period: 10s
+      retries: 3
+    networks:
+      - activist-net
+
+  nginx:
+    image: nginx:alpine
+    container_name: activist-nginx
+    restart: unless-stopped
+    ports:
+      - "9443:9443"
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/conf.d/activist.conf:ro
+      - /etc/letsencrypt:/etc/letsencrypt:ro
+    depends_on:
+      frontend:
+        condition: service_healthy
+      backend:
+        condition: service_healthy
+    networks:
+      - activist-net
+
+networks:
+  activist-net:
+    driver: bridge
+
+volumes:
+  activist_pgdata:

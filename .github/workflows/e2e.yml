@@ -1,0 +1,110 @@
+name: E2E
+
+on:
+  push:
+    branches: [main]
+
+jobs:
+  e2e:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_DB: activist_base
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+        ports:
+          - "5432:5432"
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    env:
+      DATABASE_URL: postgres://postgres:postgres@localhost:5432/activist_base?sslmode=disable
+      HTTP_ADDR: ":8080"
+      PUBLIC_BASE_URL: http://localhost:8080
+      SESSION_COOKIE_NAME: __Host-session
+      SESSION_IDLE_TTL: "30m"
+      SESSION_ABSOLUTE_TTL: "8h"
+      LOG_LEVEL: info
+      DEV_AUTH_ASSUME_ADMIN: "false"
+      DEV_AUTH_ADMIN_LOGIN: admin
+      SEED_SUPERUSER_LOGIN: superadmin
+      SEED_SUPERUSER_PASSWORD: e2e-test-password
+      E2E_FRONTEND_URL: http://localhost:5173
+      E2E_API_BASE_URL: http://localhost:8080/api/v1
+      E2E_DATABASE_URL: postgres://postgres:postgres@localhost:5432/activist_base?sslmode=disable
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: "1.25.0"
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+          cache-dependency-path: e2e/package-lock.json
+
+      - name: Run migrations
+        working-directory: backend
+        run: go run github.com/pressly/goose/v3/cmd/goose@v3.26.0 -dir migrations postgres "$DATABASE_URL" up
+
+      - name: Start backend
+        working-directory: backend
+        run: go run ./cmd/server &
+
+      - name: Wait for backend healthcheck
+        run: |
+          for i in $(seq 1 30); do
+            curl -sf http://localhost:8080/healthz && exit 0
+            sleep 2
+          done
+          exit 1
+
+      - name: Seed test fixtures
+        run: SEED_MODE=ci bash ./scripts/seed/dev-seed.sh
+        env:
+          DATABASE_URL: ${{ env.DATABASE_URL }}
+          SEED_SUPERUSER_PASSWORD: ${{ env.SEED_SUPERUSER_PASSWORD }}
+
+      - name: Install e2e dependencies
+        working-directory: e2e
+        run: npm ci
+
+      - name: Install Playwright browsers
+        working-directory: e2e
+        run: npx playwright install --with-deps chromium
+
+      - name: Build frontend
+        working-directory: frontend
+        run: npm ci && npm run build
+
+      - name: Serve frontend
+        run: npx --yes serve -s frontend/dist -l 5173 &
+
+      - name: Wait for frontend
+        run: |
+          for i in $(seq 1 15); do
+            curl -sf http://localhost:5173 && exit 0
+            sleep 2
+          done
+          exit 1
+
+      - name: Run Playwright tests
+        working-directory: e2e
+        run: npx playwright test
+
+      - name: Upload Playwright report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report-${{ github.sha }}
+          path: e2e/playwright-report/
+          retention-days: 14

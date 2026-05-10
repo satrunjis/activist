@@ -1,0 +1,20 @@
+{
+  "name": "activist-base-e2e",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "scripts": {
+    "test": "playwright test",
+    "test:headed": "playwright test --headed",
+    "test:ui": "playwright test --ui --ui-host=127.0.0.1 --ui-port=9323",
+    "test:debug": "playwright test --debug"
+  },
+  "devDependencies": {
+    "@axe-core/playwright": "^4.10.2",
+    "@playwright/test": "^1.54.2",
+    "@types/node": "^24.6.0",
+    "@types/pg": "^8.15.5",
+    "pg": "^8.16.3",
+    "typescript": "^5.9.3"
+  }
+}

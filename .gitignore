@@ -1,0 +1,52 @@
+# Env
+.env
+.env.local
+
+# Deploy docs (contains real infrastructure details)
+docs/deploy.md
+deploy/.env
+deploy/*.env
+
+# Go
+backend/bin/
+
+# Frontend build
+frontend/dist/
+frontend/node_modules/
+frontend/coverage/
+frontend/test-results/
+frontend/playwright-report/
+frontend/tmp-*.png
+
+# E2E
+e2e/node_modules/
+e2e/test-results/
+e2e/playwright-report/
+e2e/playwright-full-output.log
+
+# Perf generated output
+perf/results/
+perf/charts/
+perf/__pycache__/
+perf/*.csv
+
+# Demo seed build
+scripts/seed/dist/
+
+# Local agent artifacts
+.claude/
+.bg-shell/
+.gsd/
+.mcp.json
+CLAUDE.md
+AGENTS.md
+
+# OS
+.DS_Store
+Thumbs.db
+
+# IDE
+.idea/
+.vscode/
+*.tmp
+.tmp/

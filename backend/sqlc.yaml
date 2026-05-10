@@ -1,0 +1,28 @@
+version: "2"
+sql:
+  - engine: postgresql
+    schema:
+      - migrations/00001_auth_users_sessions.sql
+      - migrations/00002_divisions.sql
+      - migrations/00003_roles_positions_memberships.sql
+      - migrations/00004_role_kinds.sql
+      - migrations/00005_search.sql
+      - migrations/00006_eventlog.sql
+      - migrations/00007_drop_role_kind.sql
+    queries:
+      - src/repository/postgres/queries/users.sql
+      - src/repository/postgres/queries/sessions.sql
+      - src/repository/postgres/queries/divisions.sql
+      - src/repository/postgres/queries/roles.sql
+      - src/repository/postgres/queries/positions.sql
+      - src/repository/postgres/queries/memberships.sql
+      - src/repository/postgres/queries/authorization.sql
+      - src/repository/postgres/queries/search.sql
+      - src/repository/postgres/queries/eventlog.sql
+    gen:
+      go:
+        package: sqlc
+        out: src/repository/postgres/sqlc
+        sql_package: pgx/v5
+        emit_json_tags: true
+        emit_interface: true

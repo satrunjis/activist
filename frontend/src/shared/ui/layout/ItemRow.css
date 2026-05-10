@@ -1,0 +1,26 @@
+.item-row {
+  padding: var(--space-3) var(--space-4);
+  border-bottom: 1px solid var(--color-border);
+}
+
+.item-row:last-child {
+  border-bottom: none;
+}
+
+.item-row[data-clickable="true"] {
+  cursor: pointer;
+}
+
+.item-row[data-clickable="true"]:hover {
+  background: var(--color-surface-subtle);
+}
+
+.item-row[data-selected="true"] {
+  border-left: 2px solid var(--color-brand-primary);
+  background: var(--color-surface-subtle);
+}
+
+.item-row[data-disabled="true"] {
+  opacity: 0.5;
+  pointer-events: none;
+}
