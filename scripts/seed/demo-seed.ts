@@ -479,6 +479,7 @@ class ApiClient {
 
 async function waitForApi(): Promise<void> {
   const healthUrl = apiBaseUrl.replace(/\/api\/v1$/, "/healthz");
+  const sessionUrl = `${apiBaseUrl}/auth/session`;
   const deadline = Date.now() + 90_000;
   while (Date.now() < deadline) {
     try {
@@ -489,9 +490,17 @@ async function waitForApi(): Promise<void> {
     } catch {
       // Retry until backend is ready.
     }
+    try {
+      const response = await fetch(sessionUrl);
+      if (response.status === 200 || response.status === 401) {
+        return;
+      }
+    } catch {
+      // Retry until backend is ready.
+    }
     await sleep(1_000);
   }
-  throw new Error(`API did not become ready at ${healthUrl}`);
+  throw new Error(`API did not become ready at ${healthUrl} or ${sessionUrl}`);
 }
 
 function sleep(ms: number): Promise<void> {
