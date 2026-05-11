@@ -19,8 +19,6 @@ Server-side application module.
    export PUBLIC_BASE_URL="http://localhost:8080"
    export SESSION_COOKIE_NAME="__Host-session"
    export LOG_LEVEL="INFO"
-   export SEED_SUPERUSER_LOGIN="admin"
-   export SEED_SUPERUSER_PASSWORD="change-me"
    ```
 2. Optional development flags:
    ```bash
@@ -47,8 +45,6 @@ Server-side application module.
 | `LOG_LEVEL` | Yes | none | Structured log level parsed by `log/slog` (invalid values fall back to `INFO`). |
 | `DEV_AUTH_ASSUME_ADMIN` | No | `false` | Enables development-only admin assumption in auth middleware. |
 | `DEV_AUTH_ADMIN_LOGIN` | No | `admin` | Login name used when `DEV_AUTH_ASSUME_ADMIN=true`. |
-| `SEED_SUPERUSER_LOGIN` | Yes | none | purpose unclear - verify before deploying (loaded in config, not used by current server runtime). |
-| `SEED_SUPERUSER_PASSWORD` | Yes | none | purpose unclear - verify before deploying (loaded in config, not used by current server runtime). |
 
 ## Docker Build
 

@@ -43,8 +43,6 @@ services:
       SESSION_IDLE_TTL: 30m
       SESSION_ABSOLUTE_TTL: 8h
       LOG_LEVEL: info
-      SEED_SUPERUSER_LOGIN: ${SEED_SUPERUSER_LOGIN}
-      SEED_SUPERUSER_PASSWORD: ${SEED_SUPERUSER_PASSWORD}
     depends_on:
       db:
         condition: service_healthy

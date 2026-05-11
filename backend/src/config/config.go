@@ -18,8 +18,6 @@ type Config struct {
 	LogLevel              string
 	DevAuthAssumeAdmin    bool
 	DevAuthAdminLogin     string
-	SeedSuperuserLogin    string
-	SeedSuperuserPassword string
 }
 
 func Load() (Config, error) {
@@ -62,27 +60,17 @@ func Load() (Config, error) {
 		return Config{}, err
 	}
 	devAuthAdminLogin := stringEnv("DEV_AUTH_ADMIN_LOGIN", "admin")
-	seedSuperuserLogin, err := mustEnv("SEED_SUPERUSER_LOGIN")
-	if err != nil {
-		return Config{}, err
-	}
-	seedSuperuserPassword, err := mustEnv("SEED_SUPERUSER_PASSWORD")
-	if err != nil {
-		return Config{}, err
-	}
 
 	return Config{
-		HTTPAddr:              httpAddr,
-		PublicBaseURL:         publicBaseURL,
-		DatabaseURL:           databaseURL,
-		SessionCookieName:     sessionCookieName,
-		SessionIdleTTL:        sessionIdleTTL,
-		SessionAbsoluteTTL:    sessionAbsoluteTTL,
-		LogLevel:              logLevel,
-		DevAuthAssumeAdmin:    devAuthAssumeAdmin,
-		DevAuthAdminLogin:     devAuthAdminLogin,
-		SeedSuperuserLogin:    seedSuperuserLogin,
-		SeedSuperuserPassword: seedSuperuserPassword,
+		HTTPAddr:           httpAddr,
+		PublicBaseURL:      publicBaseURL,
+		DatabaseURL:        databaseURL,
+		SessionCookieName:  sessionCookieName,
+		SessionIdleTTL:     sessionIdleTTL,
+		SessionAbsoluteTTL: sessionAbsoluteTTL,
+		LogLevel:           logLevel,
+		DevAuthAssumeAdmin: devAuthAssumeAdmin,
+		DevAuthAdminLogin:  devAuthAdminLogin,
 	}, nil
 }
 

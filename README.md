@@ -81,8 +81,6 @@ Backend по умолчанию слушает `:8080`. Frontend dev server ра
 | `SESSION_IDLE_TTL` | Обязательная | Idle session timeout как Go duration. | `30m` |
 | `SESSION_ABSOLUTE_TTL` | Обязательная | Максимальное время жизни session как Go duration. | `8h` |
 | `LOG_LEVEL` | Обязательная | Structured log level. | `info` |
-| `SEED_SUPERUSER_LOGIN` | Обязательная | Login, используемый seed tooling для начального superuser. | `superadmin` |
-| `SEED_SUPERUSER_PASSWORD` | Обязательная | Password, используемый seed tooling для начального superuser. | `change-me` |
 | `DEV_AUTH_ASSUME_ADMIN` | Опциональная | Включает development-only admin assumption в auth middleware. | `false` |
 | `DEV_AUTH_ADMIN_LOGIN` | Опциональная | Login, используемый при включенном development admin assumption. | `admin` |
 | `E2E_FRONTEND_URL` | Опциональная | Frontend URL, используемый Playwright tests. | `http://localhost:5173` |
